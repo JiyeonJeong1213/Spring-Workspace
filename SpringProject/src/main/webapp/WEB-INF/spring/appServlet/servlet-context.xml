@@ -20,9 +20,20 @@
 		<beans:property name="prefix" value="/WEB-INF/views/" />
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
+	<!--  
+		주소 자동완성 도구
+		매번 같은주소(/WEB-INF/views/)를 추가해야 하기 때문에 자동완성이 기본적으로 등록되어 있음
+		- view resolver라는 도구를 등록(spring제공)
+		- class : InternalResourceViewResolver
+		- prefix : 접두어 / suffix : 접미어
+		- return할 파일명을 제시하는 부분에 접두어, 접미어를 붙여서 forward하겠다.
+		return값으로 문자열을 받았을 경우 앞뒤로 자동으로 /WEB-INF/views/ + 문자열 + .jsp 붙여줌
+	-->
 	
 	<context:component-scan base-package="com.kh.spring" />
-	
+	<!--  
+		base-package에 등록된 패키지와 그 하위 패키지 모두 감시(scan)해서 빈으로 등록 가능한 클래스들은 spring-bean으로 등록해둠
+	-->
 	
 	
 </beans:beans>
