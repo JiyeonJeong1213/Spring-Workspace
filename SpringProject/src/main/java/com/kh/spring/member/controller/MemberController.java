@@ -251,6 +251,7 @@ public class MemberController {
 			}else { // 아이디저장 체크하지 않았을 때
 				cookie.setMaxAge(0); // 유효시간 0초 -> 생성되자마자 소멸
 			}
+			cookie.setPath(req.getContextPath());
 			
 			// 쿠기를 응답시 클라이언트에게 전달
 			resp.addCookie(cookie);

@@ -19,6 +19,8 @@ public class BoardTypeInterceptor extends HandlerInterceptorAdapter {
 	@Autowired
 	private BoardService boardService;
 	
+	// Filter -> dispatcherServlet -> interceptor -> controller
+	
 	@Override // 전처리할 메서드 작성
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 		
