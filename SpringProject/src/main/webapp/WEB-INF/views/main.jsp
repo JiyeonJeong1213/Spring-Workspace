@@ -122,6 +122,7 @@
     <!-- jQuery 라이브러리 추가 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
    
-   
+    <!-- main.js 연결 (js파일은 대부분 맨 아래 추가) -->
+   	<script src="${contextPath }/resources/js/main/main.js"></script>
 </body>
 </html>

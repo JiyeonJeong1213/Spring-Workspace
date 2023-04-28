@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:mvc = "http://www.springframework.org/schema/mvc"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
@@ -35,5 +36,14 @@
 		base-package에 등록된 패키지와 그 하위 패키지 모두 감시(scan)해서 빈으로 등록 가능한 클래스들은 spring-bean으로 등록해둠
 	-->
 	
-	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/> <!-- 모든 요청이 들어왔을 때 -->
+			<beans:bean class="com.kh.spring.common.interceptor.BoardTypeInterceptor"/> <!-- 전처리할 지 후처리할 지 클래스 내에서 지정 -->
+		</mvc:interceptor>
+	</mvc:interceptors>
+	<!--  
+		Interceptor : 컨트롤러에 요청이 들어가기 전/후를 나눠서 인터셉터가 중간에 요청을 가로챔
+					  스프링의 모든 빈객체에 접근이 가능하며, 일반적으로 로그인체크, 권한체크, 프로그램 실행시간체크 등에 사용됨
+	-->
 </beans:beans>

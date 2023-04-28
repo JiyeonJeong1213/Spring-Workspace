@@ -1,18 +1,26 @@
 package com.kh.spring.member.controller;
 
+import java.util.ArrayList;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.google.gson.Gson;
 import com.kh.spring.member.model.service.MemberService;
 import com.kh.spring.member.model.vo.Member;
 
@@ -20,7 +28,7 @@ import com.kh.spring.member.model.vo.Member;
 @RequestMapping("/member") // localhost:8081/spring/member 이하의 url요청을 처리하는 컨트롤러
 
 // 로그인, 회원가입 기능 완료 후 실행될 코드
-@SessionAttributes({"loginMember"})
+@SessionAttributes({"loginUser"})
 public class MemberController {
 
 	//private MemberService ms = new MemberServiceImpl();
@@ -48,6 +56,8 @@ public class MemberController {
 	//@Autowired // bean으로 등록된 객체중 타입이 같거나 상속관계인 bean을 자동으로 주입해주는 역할
 	private MemberService memberService;
 	
+	private BCryptPasswordEncoder bcryptPasswordEncoder;
+	
 	/*
 	 * 2) 생성자방식 의존성
 	 * 생성자를 통한 의존성 주입 : 생성자에 매개변수로 참조할 클래스를 인자로 받아 필드에 매핑시킴
@@ -56,8 +66,9 @@ public class MemberController {
 	 */
 	/*@Autowired 생성자가 하나뿐이라면 생략가능. 여러개라면 반드시 Autowired어노테이션 추가해야 함*/
 	@Autowired
-	public MemberController(MemberService memberService) {
+	public MemberController(MemberService memberService, BCryptPasswordEncoder bcryptPasswordEncoder) {
 		this.memberService = memberService;
+		this.bcryptPasswordEncoder = bcryptPasswordEncoder;
 	}
 	
 	/*
@@ -159,7 +170,7 @@ public class MemberController {
 //		
 //		// Model의 기본 scope는 requestScope임. 단, sessionScope로 변환하고 싶은 경우
 //		// 클래스 레벨로 @SessionAttribute어노테이션을 작성하면 됨
-//		model.addAttribute("loginMember", m); // == request.getSession().setAttribute ... 
+//		model.addAttribute("loginUser", m); // == request.getSession().setAttribute ... 
 //		
 //		System.out.println(m);
 //		
@@ -175,7 +186,7 @@ public class MemberController {
 	// return mv;
 	
 	/*
-	 * @RequestMApping? 클라이언트의 요청(url)에 맞는 클래스 or 메소드를 연결시켜주는 어노테이션
+	 * @RequestMapping? 클라이언트의 요청(url)에 맞는 클래스 or 메소드를 연결시켜주는 어노테이션
 	 * 					해당 어노테이션이 붙은 클래스/메소드를 스프링 컨테이너가 HandlerMapping으로 등록해둔다.
 	 * 			HandlerMapping? 사용자가 지정한 url정보들을 모아둔 저장소
 	 * 					--> 클래스레벨에서 사용된 경우 : 공통주소로 활용됨(만약 현재 클래스의 공통주소인 member로 요청이 들어오면
@@ -193,22 +204,146 @@ public class MemberController {
 	 */
 //	@RequestMapping(value="/login", method="POST")
 	@PostMapping("/login")
-	public ModelAndView loginMember(ModelAndView mv, Member m, 
+	public String loginMember(Model model, Member m, 
 									HttpSession session, RedirectAttributes ra,
 									HttpServletResponse resp,
 									HttpServletRequest req,
 									@RequestParam(value="saveId", required=false) String saveId) {
 		
-		Member loginUser = memberService.loginMember(m);
+		// 암호화 전 로그인 요청 처리
+//		Member loginUser = memberService.loginMember(m);
+//		
+//		if(loginUser == null) { // 로그인 실패
+//			mv.addObject("errorMsg", "로그인 실패");
+//			mv.setViewName("common/errorPage");
+//		}else { // 로그인 성공
+//			session.setAttribute("loginUser", loginUser);
+//			mv.setViewName("redirect:/"); // 메인페이지로 url재요청
+//			// response.sendRedirect(request.getContextPath()); 와 동일
+//		}
 		
-		if(loginUser == null) { // 로그인 실패
-			mv.addObject("errorMsg", "로그인 실패");
-			mv.setViewName("common/errorPage");
-		}else { // 로그인 성공
-			session.setAttribute("loginUser", loginUser);
-			mv.setViewName("redirect:/"); // 메인페이지로 url재요청
-			// response.sendRedirect(request.getContextPath()); 와 동일
+		// 암호화 후 로그인 요청 처리
+		/*
+		 * 기존에 평문이 DB에 등록되어 있었기 때문에 아이디와 비밀번호를 같이 입력받아 조회하는 형태로 작업했음
+		 * 암호화 작업을 하면 입력받은 비밀번호는 평문이지만 DB에 등록된 비밀번호는 암호문이기 때문에 비교시 무조건 다르게 나옴
+		 * 아이디로 먼저 회원정보 조회 후 회원이 있으면 비밀번호 암호문 비교 메소드를 이욯해서 일치하는지 확인
+		 */
+		Member loginUser = memberService.loginMember(m);
+		// loginUser : 아이디 + 비밀번호로 조회한 회원정보 ---> 아이디로만 조회
+		// loginUser안의 userPwd : 암호화된 비밀번호
+		// m안의 userPwd : 암호화 되지 않은 평문 비밀번호
+		
+		// BCryptPasswordEncoder객체의 메소드 중 matches메소드 사용
+		// matches(평문, 암호문)을 작성하면 내부적으로 복호화 작업이 이루어져서 일치여부를 boolean값으로 반환(true일치, false불일치)
+		if(loginUser != null && bcryptPasswordEncoder.matches(m.getUserPwd(), loginUser.getUserPwd())) {
+			// 두 조건 모두 만족시 로그인 성공
+			//session.setAttribute("loginUser", loginUser);
+			//mv.addObject("loginUser", loginUser); // MV로 추가시 에러 발생
+			model.addAttribute("loginUser", loginUser);
+			
+			session.setAttribute("alertMsg", "로그인 성공");
+			
+			// 로그인 성공시 아이디값을 저장하고 있는 쿠키 생성(유효시간 1년)
+			Cookie cookie = new Cookie("saveId", loginUser.getUserId());
+			
+			if(saveId != null) { // 아이디 저장이 체크되었을 때
+				cookie.setMaxAge(60 * 60 * 24 * 365); // 초단위지정(1년)
+			}else { // 아이디저장 체크하지 않았을 때
+				cookie.setMaxAge(0); // 유효시간 0초 -> 생성되자마자 소멸
+			}
+			
+			// 쿠기를 응답시 클라이언트에게 전달
+			resp.addCookie(cookie);
+			
+			//mv.setViewName("redirect:/");
+			return "redirect:/";
+		}else {
+			// 로그인 실패
+			ra.addFlashAttribute("errorMsg", "로그인 실패");
+			// redirect의 특징 -> request에 데이터를 저장할 수 없다.
+			// redirect시 잠깐 데이터를 sessionScope에 보관
+			// redirect완료 후 다시 requestScope로 이관 ==> 페이지 재요청시에도 requestScope에 데이터를 유지 가능
+			// : redirect(페이지 재요청)시에도 requestScope로 세팅된 데이터가 유지될 수 있도록 하는 방법을 spring에서 제공해줌
+			//   RedirectAttribute객체(컨트롤러의 매개변수로 작성하면 Argument Resolver가 넣어줌)
+			
+			//mv.setViewName("redirect:/");
+			return "redirect:/";
 		}
-		return mv;
+		
+	}
+	
+	@GetMapping("/insert") // /spring/member/insert
+	public String enrollForm() {
+		return "member/memberEnrollForm";
+	}
+	
+	/*
+	 * 1. memberService 호출해서 insertMember 메서드 실행 => DB에 새 회원정보 등록
+	 * 2. MEMBER테이블에 회원가입등록 성공했다면 alertMsg <-- 회원가입성공 메세지 보내기
+	 * 	  MEMBER테이블에 회원등록 실패했다면, 에러페이지로 메세지 담아서 보내기 <-- 회원가입 실패 메세지(리퀘스트)
+	 */
+	@PostMapping("/insert")
+	public String insertMember(Member m, HttpSession session, Model model) {
+		System.out.println("암호화 전 비밀번호 : "+m.getUserPwd());
+		
+		// 암호화 작업
+		String encPwd = bcryptPasswordEncoder.encode(m.getUserPwd());
+		
+		// 암호화된 pwd를 m의 userPwd에 다시 대입
+		m.setUserPwd(encPwd);
+		
+		System.out.println("암호화 후 비밀번호 : "+m.getUserPwd());
+		
+		// 1. memberService 호출해서 insertMember메서드 실행 후 DB에 회원객체 등록
+		int result = memberService.insertMember(m);
+		
+		/*
+		 * 2. MEMBER테이블에 회원가입등록 성공했다면 alertMsg(session)
+		 * 							실패했다면 errorMsg(request)
+		 */
+		String url = "";
+		if(result>0) {// 성공시 -> 메인페이지로
+			session.setAttribute("alertMsg", "회원가입 성공");
+			url = "redirect:/";
+		}else {// 실패 -> 에러페이지로
+			model.addAttribute("errorMsg", "회원가입 실패");
+			url = "common/errorPage";
+		}
+		
+		return url;
+	}
+	
+	@GetMapping("/logout")
+	public String logoutMember(HttpSession session, SessionStatus status) {
+		// 로그아웃 기능 ? session안에 저장된 loginUser정보를 날리는 게 곧 로그아웃
+		// @SessionAttribute를 이용해서 sessionScope에 배치된 데이터는 일반적인 방법으로는 없앨 수 없음
+		// SessionStatus라는 별도의 객체를 이용해야만 없앨 수 있음
+		
+		//session.invalidate(); // 기존 세션 방식으로는 안됨
+		status.setComplete(); // 세션 할 일 완료되면 없애는 메소드
+		
+		return "redirect:/";
+	}
+	
+	@ResponseBody // 반환되는 값이 forward/redirect 경로가 아닌 값 그 자체임을 의미(ajax시 사용)
+	@PostMapping("/select1")
+	public String select1(String input) {
+		
+		Member m = new Member();
+		m.setUserId(input);
+		Member searchMember = memberService.loginMember(m);
+		
+		// JSON : 자바스크립트 객체 표기법으로 작성된 "문자열"형태의 객체
+		// GSON 라이브러리 : JSON을 보다 쉽게 다루기 위한 google에서 배포한 라이브러리
+		
+		return new Gson().toJson(searchMember);
+	}
+	
+	@ResponseBody // 반환되는 값이 forward/redirect 경로가 아닌 값 그 자체임을 의미(ajax시 사용)
+	@GetMapping("/selectAll")
+	public String selectAll() {
+		ArrayList<Member> list = memberService.selectAll();
+		//System.out.println(list);
+		return new Gson().toJson(list);
 	}
 }
