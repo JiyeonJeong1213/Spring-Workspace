@@ -14,19 +14,17 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import com.kh.spring.board.model.service.BoardService;
 import com.kh.spring.board.model.vo.BoardType;
 
-public class BoardTypeInterceptor extends HandlerInterceptorAdapter {
+public class BoardTypeInterceptor extends HandlerInterceptorAdapter{
 
 	@Autowired
 	private BoardService boardService;
 	
-	// Filter -> dispatcherServlet -> interceptor -> controller
-	
-	@Override // 전처리할 메서드 작성
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+	@Override // 전치리할 메서드 작성
+	public boolean preHandle(HttpServletRequest request , HttpServletResponse response, Object handler) {
 		
-		// application scope에 boardTypeList가 있는지 체크, 없을 경우 이를 조회하는 boardService메서드 호출 후 결과 셋팅
+		//application scope에 boardTypeList가 있는지 체크, 없을경우 이를 조회하는 boardService메서드 호출후 결과를 셋팅
 		
-		// application scope객체 얻어오기
+		//application scope객체 얻어오기
 		ServletContext application = request.getServletContext();
 		
 		if(application.getAttribute("boardTypeList") == null) {
@@ -38,12 +36,25 @@ public class BoardTypeInterceptor extends HandlerInterceptorAdapter {
 	}
 	
 	@Override // 후처리할 메서드 작성
-	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+	public void postHandle(HttpServletRequest request , HttpServletResponse response, Object handler , ModelAndView modelAndView) {
+		
 		System.out.println("후처리 실행");
 	}
 	
-	@Override // view화면까지 다 만들어지고 나서
-	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+	@Override
+	public void afterCompletion(HttpServletRequest request , HttpServletResponse response, Object handler, Exception ex) {
 		System.out.println("view 처리 완료 후 수행");
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

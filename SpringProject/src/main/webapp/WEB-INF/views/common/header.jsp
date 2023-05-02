@@ -48,9 +48,6 @@ div {box-sizing:border-box;}
 }
 </style>
 </head>
-
-
-
 <body>
 
 	<c:if test="${ not empty alertMsg }">
@@ -64,21 +61,21 @@ div {box-sizing:border-box;}
 	<div class="header">
 <!-- 		<div id="header_1"> -->
 			<div id="header_1_left">
-			 <a href="<%= request.getContextPath() %>">
+			 <a href="<%= request.getContextPath()%>">
 		  		<%--
 		  		
 		  		header.jsp파일처럼 를 별도의 jsp로 분리한 경우 , header.jsp를 포함(include)하고 있는 다른 jsp페이지에서 상대경로로 작성된 이미지의 경로가 일치하지 않는 문제가 발생할수 있음.
 		    	따라서 지금처럼 분리시켜둔 jsp에 경로를 지정하는 경우 절대 경로를 이용할것
 		    	
-		    	<%= request.getContextPath() %> 구하는 방법 
+		    	contextPath 구하는 방법 
 		  		1) /spring --> 하드코딩시 : 컨텍스트이름이 변경될경우 일일이 찾아서 수정해줘야하는 번거로움이 있다.
-		   		2) <%=  request.get<%= request.getContextPath() %>() %> --> 화면안에 자바코드가 혼합되어 프론트페이지가 지저분해지는 단점있따.
-		    	3) ${pageContext.servletContext.<%= request.getContextPath() %> } --> 자바코드를 사용하지 않고 el표현식을 활용하게될시 화면을 좀더 깔끔하게 꾸밀수 있찌만, <%= request.getContextPath() %>를 구하기 위한 경로가 너무
+		   		2) <%=  request.getContextPath() %> --> 화면안에 자바코드가 혼합되어 프론트페이지가 지저분해지는 단점있따.
+		    	3) ${pageContext.servletContext.contextPath } --> 자바코드를 사용하지 않고 el표현식을 활용하게될시 화면을 좀더 깔끔하게 꾸밀수 있찌만, contextPath를 구하기 위한 경로가 너무
 		    												길어 작성하기 번거롭다.
 		    			    	
 		    	따라서 application scope에 최상위 주소를 간단히 부를 수 있는 형태로 저장할 예정!
 		    	 --%>
-		        <img src="<%=request.getContextPath() %>/resources/images/top_logo.jpg">
+		        <img src="<%=  request.getContextPath() %>/resources/images/top_logo.jpg">
 		      	
 		    </a>
 <!-- 				<img src="https://www.iei.or.kr/resources/images/main/main_renewal/top_logo.jpg"/> -->
@@ -108,7 +105,7 @@ div {box-sizing:border-box;}
        				<c:if test="${ empty sessionScope.loginUser}"> 
             			<a data-toggle="modal" data-target="#loginModal">로그인</a>
             			<span>|</span>
-            			<a href="<%= request.getContextPath() %>/member/insert">회원가입</a>
+            			<a href="<%= request.getContextPath()%>/member/insert">회원가입</a>
             			<span>|</span>
 	                    <a href="#">ID/PW 찾기</a>
             			<!-- 회원가입 / ID/PW 찾기 영역 -->
@@ -125,12 +122,12 @@ div {box-sizing:border-box;}
 	    <ul>
 	    	<li><a href="#">HOME</a></li>
 	    	<li><a href="#">공지사항</a></li>
-	    	<li><a href="<%= request.getContextPath() %>/chat/chatRoomList">채팅</a></li>
-	       <%--  <li><a href="${<%= request.getContextPath() %>}/board/list?type=1">공지사항</a></li>
-	        <li><a href="${<%= request.getContextPath() %>}/board/list?type=2">자유 게시판</a></li>
-	        <li><a href="${<%= request.getContextPath() %>}/board/list?type=3">질문 게시판</a></li> --%>	
+	    	<li><a href="<%= request.getContextPath()%>/chat/chatRoomList">채팅</a></li>
+	       <%--  <li><a href="<%= request.getContextPath()%>/board/list?type=1">공지사항</a></li>
+	        <li><a href="<%= request.getContextPath()%>/board/list?type=2">자유 게시판</a></li>
+	        <li><a href="<%= request.getContextPath()%>/board/list?type=3">질문 게시판</a></li> --%>	
 			<c:forEach var="boardType" items="${boardTypeList}">
-				<li><a href="<%= request.getContextPath() %>/board/list/${boardType.boardCd}">${boardType.boardName}</a></li>
+				<li><a href="<%= request.getContextPath()%>/board/list/${boardType.boardCd}">${boardType.boardName}</a></li>
 			</c:forEach>
 	    </ul>
 	</div>
@@ -147,7 +144,7 @@ div {box-sizing:border-box;}
 					<h4 class="modal-title">Login</h4>
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 				</div>
-				<form action="<%= request.getContextPath() %>/member/login" method="post">
+				<form action="<%= request.getContextPath()%>/member/login" method="post">
 					<!--  모달 바디 -->
 					<div class="modal-body">
 						<input type="text" class="form-controll mb-2 mr-sm-2" placeholder="Enter ID" id="userId" name="userId" value="${cookie.saveId.value}" style="width:100%"> <br>

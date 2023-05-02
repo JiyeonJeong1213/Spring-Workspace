@@ -2,25 +2,20 @@
  * 
  */
  
- /* 회원정보 조회(비동기 통신) */
- document.getElementById("select1").addEventListener("click", function(){
- 	
+ /* 회원정보 조회 (비동기 통신) */
+ document.getElementById("select1").addEventListener("click",function(){
+ 
  	const input = document.getElementById("in1");
  	const div = document.getElementById("result1");
  	
  	// Ajax작성
  	$.ajax({
- 		url : "member/select1",
+ 		url : "member/selectOne",
  		data : {input : input.value},
  		type : "POST",
  		dataType : "JSON",
  		success : function(result){
  			console.log(result);
- 			let str = "회원번호 : "+result.userNo
- 					+ " 아이디 : "+result.userId
- 					+ " 닉네임 : "+result.nickName
- 					+ " 전화번호 : "+result.phone;
- 			div.append(str);
  		},
  		error : function(request){
  			console.log("에러발생");
@@ -29,19 +24,20 @@
  	})
  })
  
- /* 일정 시간 마다 회원 목록 조회 */
+ /* 일정 시간 마다 회원 목록 조회*/
  function selectAll(){
  	$.ajax({
  		url : "member/selectAll",
  		dataType : "json",
- 		success : function(list) {
+ 		success : function(list){
  			
- 			// list == js배열
+ 			// list == js 배열
  			
  			const memberList = document.getElementById("memberList");
+ 			
  			memberList.innerHTML = "";
  			
- 			// 반복문 활용하여 데이터 추가
+ 			//반복문을 활용하여 데이터 추가
  			for(let item of list){
  				const tr = document.createElement("tr");
  				
@@ -63,9 +59,25 @@
  			console.log("에러발생");
  			console.log("에러코드 : "+request.status);
  		}
+ 	
  	})
  }
  
  selectAll(); // 함수호출
  
- window.setInterval(selectAll(), 10000); // 10초간격으로 호출
+ window.setInterval(selectAll , 10000);
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
