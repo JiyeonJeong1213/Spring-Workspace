@@ -111,7 +111,7 @@
 						<th style="vertical-align: middle;"><button class="btn btn-secondary" onclick="insertReply();">등록하기</button></th> 
 					</tr>
 					<tr>
-						<td colspan="3">댓글(<span id="rcount">3</span>)</td>
+						<td colspan="3">댓글(<span id="rcount"></span>)</td>
 					</tr>
 				</thead>
 				<tbody>
@@ -130,7 +130,7 @@
 					
 					function selectReplyList(){
 						$.ajax({
-							url : '${contextPath}/board/reply.bo',
+							url : '${contextPath}/reply/selectReplyList',
 							data : {bno : '${b.boardNo}'},
 							dataType : 'json',
 							success: function(result){
@@ -156,11 +156,13 @@
 					function insertReply(){
 						
 						$.ajax({
-							url: "insertReply.bo",
+							url: "${contextPath}/reply/insert",
 							data : {
 								refBno : '${b.boardNo}',
-								replyContent: $("#replyContent").val()
+								replyContent: $("#replyContent").val(),
+								replyWriter : '${loginUser.userNo}'
 							},
+							type : 'POST',
 							success : function (result){
 								if(result == "1"){
 									alertify.alert("서비스 요청 성공", '댓글 등록 성공' );
