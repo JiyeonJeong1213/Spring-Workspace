@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -280,7 +281,7 @@ public class MemberController {
 			return "redirect:/";
 		}else {
 			//로그인 실패
-			ra.addFlashAttribute("errorMsg","로그인 성공");
+			ra.addFlashAttribute("alertMsg","로그인 실패");
 			
 			// redirect의 특징 -> request에 데이터를 저장할수 없다.
 			// redirect시 잠깐 데이터를 sessionScope에 보관
@@ -405,6 +406,18 @@ public class MemberController {
 	
 	
 	
+	// crontab방식
+	public void testCron() {
+		System.out.println("크론 테스트");
+	}
+	
+	// 고정방식(spring-scheduler)
+	public int count = 0;
+	
+	@Scheduled(fixedDelay=1000)
+	public void test() {
+		System.out.println("1초마다 출력하기" + count++);
+	}
 	
 	
 	
