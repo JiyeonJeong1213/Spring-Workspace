@@ -7,8 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +33,7 @@ import com.kh.spring.member.model.vo.Member;
 
 // 로그인, 회원가입기능 완료후 실행될 코드
 @SessionAttributes({"loginUser"})  
-public class MemberController {
+public class MemberController extends QuartzJobBean{
 
 	//private MemberService ms = new MemberServiceImpl();
 	// 기존 객체 생성방식. 서비스가 동시에 많은 횟수의 요청이들어오면 그 만큼의 객체가 생성됨
@@ -414,12 +416,27 @@ public class MemberController {
 	// 고정방식(spring-scheduler)
 	public int count = 0;
 	
-	@Scheduled(fixedDelay=1000)
-	public void test() {
-		System.out.println("1초마다 출력하기" + count++);
+//	@Scheduled(fixedDelay=1000)
+//	public void test() {
+//		System.out.println("1초마다 출력하기" + count++);
+//	}
+	
+	
+	public void testQuartz() {
+		System.out.println("콰츠 테스트");
 	}
 	
-	
+	/*
+	 * 회원정보 확인 스케줄러
+	 * 매일 오전 1시에 모든 사용자의 정보를 검색하여 사용자가 비밀번호를 안 바꾼지 3개월이 지났다면,
+	 * Member테이블의 CHANGE_PWD의 값을 Y로 변경
+	 * 
+	 * 로그인 시 CHANGE_PWD의 값이 Y라면 비밀번호 변경페이지로 이동(이건안함)
+	 */
+	@Override
+	public void executeInternal(JobExecutionContext context) throws JobExecutionException{
+		memberService.updateMemberChangePwd();
+	}
 	
 	
 }

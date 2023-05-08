@@ -31,6 +31,7 @@
 	<result column="USER_NO" property="userNo"/>
 	<result column="PROFILE_IMG" property="profileImage"/>
 	
+	<!-- 방법1 -->
 	<collection property="imgList" javaType="java.util.ArrayList" ofType="boardImg" 
 	   select="selectImgList" column="BOARD_NO"/>
 	<!-- 
@@ -45,6 +46,9 @@
 		게시글 상세 조회 후 BoardDetailResultSet이 호출되었을때 상세 조회 결과 중 BOARD_NO를 이용해서 selectImgList를
 		수행하고 결과를 imgList필드에 세팅하겠다.
 	 -->
+	 
+	 <!-- 방법2 -->
+	 <!-- <collection property="imgList" resultMap="boardImgResultSet"/> -->
 </resultMap>
 
 <resultMap id="boardImgResultSet" type="boardImg">
@@ -178,6 +182,23 @@
 		BOARD_NO = #{boardNo}
 </select>
 
+<select id="selectBoardDetail2" resultMap="boardDetailResultSet">
+	SELECT 
+		BOARD_NO,
+		BOARD_WRITER,
+		NICK_NAME,
+		BOARD_TITLE,
+		COUNT,
+		BOARD_CONTENT,
+		TO_CHAR(B.CREATE_DATE , 'YYYY"년" MM"월" DD"일" HH24:MI:SS') CREATE_DATE,
+        BI.*
+		FROM BOARD B
+		JOIN MEMBER M ON M.USER_NO = B.BOARD_WRITER
+		LEFT JOIN BOARD_IMG BI ON B.BOARD_NO = BI.REF_BNO
+		WHERE 
+		BOARD_NO = #{boardNo}
+</select>
+
 <update id="updateReadCount">
 	UPDATE BOARD SET
 	COUNT = COUNT +1
@@ -251,4 +272,9 @@
 	  	${deleteList} <!-- 0, 1, 2, 3 -->
 	  )
 </delete>
+
+<select id="selectAllBoardImgs" resultType="string">
+	SELECT CHANGE_NAME
+	FROM BOARD_IMG
+</select>
 </mapper>
