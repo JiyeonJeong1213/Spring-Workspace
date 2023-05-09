@@ -48,7 +48,7 @@
 	 -->
 	<mvc:interceptors>
 		<mvc:interceptor>
-			<mvc:mapping path="/**"/>
+			<mvc:mapping path="/**"/><!-- 모든 경로에 적용 -->
 				<beans:bean class="com.kh.spring.common.interceptor.BoardTypeInterceptor"/>
 		</mvc:interceptor>	
 		
@@ -76,7 +76,7 @@
 	
 	<aop:aspectj-autoproxy proxy-target-class="false"/>
 	<!--  
-		proxy-target-class : 프록시 객체 생성시 interface or class로 프록시 객체를 생성할지를 정하는 구문
+		proxy-target-class : 프록시 객체 생성시 interface or class중 뭐로 프록시 객체를 생성할지를 정하는 구문
 		기본값 : true -> 프록시 객체를 생성시 클래스로 만들어줌
 		일반적으로 프록시 객체는 자바에서 기본적으로 제공하는 다이나믹 프록시 interface로 생성함(false)
 		클래스로 생성하게 되면 cglib라이브러리를 이용해서 프록시 객체를 생성하는데 성능상 이슈가 있어서 사용하지 않는 것을 권장
